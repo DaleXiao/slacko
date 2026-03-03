@@ -7,36 +7,86 @@ import (
 	"strings"
 )
 
-// ImportFromBrowser attempts to extract the d cookie from Chrome's cookie store.
-// This is a simplified version - full implementation would use sweetcookie or
-// platform-specific cookie extraction.
-func ImportFromBrowser(browser string) (string, error) {
-	if browser != "chrome" {
-		return "", fmt.Errorf("only 'chrome' browser is supported")
+// Supported browsers
+var supportedBrowsers = []string{"chrome", "edge", "brave", "firefox", "safari"}
+
+// ImportFromBrowser extracts the d cookie from a browser's cookie store.
+// Supported browsers: chrome, edge, brave, firefox, safari.
+// Uses sweetcookie CLI if available, otherwise provides manual instructions.
+func ImportFromBrowser(browser, browserProfile string) (string, error) {
+	browser = strings.ToLower(browser)
+
+	valid := false
+	for _, b := range supportedBrowsers {
+		if browser == b {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return "", fmt.Errorf("unsupported browser %q. Supported: %s", browser, strings.Join(supportedBrowsers, ", "))
 	}
 
+	// Try sweetcookie first (supports all browsers on macOS/Linux/Windows)
+	if cookie, err := trySweetcookie(browser, browserProfile); err == nil {
+		return cookie, nil
+	}
+
+	// Fallback: platform-specific manual instructions
 	switch runtime.GOOS {
 	case "darwin":
-		return importChromeMAC()
+		return "", manualInstructions(browser)
 	case "linux":
-		return importChromeLinux()
+		return "", manualInstructions(browser)
+	case "windows":
+		return "", manualInstructions(browser)
 	default:
 		return "", fmt.Errorf("browser cookie import not supported on %s. Use 'slacko auth manual' instead", runtime.GOOS)
 	}
 }
 
-func importChromeMAC() (string, error) {
-	// Try using sweetcookie if available
+func trySweetcookie(browser, profile string) (string, error) {
 	path, err := exec.LookPath("sweetcookie")
-	if err == nil {
-		out, err := exec.Command(path, "get", "--browser", "chrome", "--domain", ".slack.com", "--name", "d").Output()
-		if err == nil {
-			return strings.TrimSpace(string(out)), nil
-		}
+	if err != nil {
+		return "", err
 	}
-	return "", fmt.Errorf("cookie import requires sweetcookie. Install: go install github.com/nicois/sweetcookie@latest\nOr use 'slacko auth manual --token TOKEN --cookie COOKIE'")
+
+	args := []string{"get", "--browser", browser, "--domain", ".slack.com", "--name", "d"}
+	if profile != "" {
+		args = append(args, "--browser-profile", profile)
+	}
+
+	out, err := exec.Command(path, args...).Output()
+	if err != nil {
+		return "", fmt.Errorf("sweetcookie failed: %w", err)
+	}
+
+	cookie := strings.TrimSpace(string(out))
+	if cookie == "" {
+		return "", fmt.Errorf("no d cookie found for .slack.com in %s", browser)
+	}
+	return cookie, nil
 }
 
-func importChromeLinux() (string, error) {
-	return "", fmt.Errorf("automatic Chrome cookie import on Linux is not yet supported.\nUse 'slacko auth manual --token TOKEN --cookie COOKIE' instead.\n\nTo get your cookie:\n1. Open Chrome → slack.com → F12 → Application → Cookies\n2. Find the 'd' cookie for .slack.com domain\n3. Copy its value")
+func manualInstructions(browser string) error {
+	browserName := map[string]string{
+		"chrome":  "Chrome",
+		"edge":    "Edge",
+		"brave":   "Brave",
+		"firefox": "Firefox",
+		"safari":  "Safari",
+	}[browser]
+
+	return fmt.Errorf(`cookie import requires sweetcookie CLI.
+
+Install:  go install github.com/steipete/sweetcookie/cmd/sweetcookie@latest
+
+Or extract manually:
+1. Open %s → app.slack.com → F12 → Application → Cookies
+2. Find the 'd' cookie for .slack.com domain
+3. Copy its value
+4. Run: slacko auth manual --token xoxc-YOUR-TOKEN --cookie "YOUR-D-COOKIE"
+
+For the xoxc- token:
+  F12 → Network → filter 'api/' → check any request form data for 'token'`, browserName)
 }

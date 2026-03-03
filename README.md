@@ -55,11 +55,16 @@ go install github.com/DaleXiao/slacko/cmd/slacko@latest
 
 ### 1. Get your credentials
 
-**Option A: Import from Chrome** (easiest)
+**Option A: Import from browser** (easiest)
 
 ```bash
 slacko auth import --browser chrome
+slacko auth import --browser edge
+slacko auth import --browser brave
+slacko auth import --browser edge --browser-profile "Profile 1"
 ```
+
+Supported browsers: Chrome, Edge, Brave, Firefox, Safari (requires [sweetcookie](https://github.com/steipete/sweetcookie)).
 
 **Option B: Manual setup**
 
