@@ -1,16 +1,43 @@
-# slacko
+<![CDATA[<div align="center">
 
-Slack CLI tool using browser cookies — no Slack App installation required.
+# 🔧 slacko
 
-像 [spogo](https://github.com/steipete/spogo) 用浏览器 cookie 绕过 Spotify 限制一样，slacko 用浏览器 cookie（`xoxc-` token + `d` cookie）调用 Slack 内部 Web API。
+**Slack, but make it terminal.**
 
-## Install / 安装
+Power CLI using web cookies. Read channels, send messages, search, and script with JSON/plain output.
 
-```bash
-go install github.com/DaleXiao/slacko/cmd/slacko@latest
+[![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white)](https://go.dev)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+</div>
+
+---
+
+Your already logged-in Slack workspace — the agent can use it directly. No admin permissions, no OAuth app registration, no rate limits.
+
+```
+AI Agent (Claude, GPT, etc.)
+       │ CLI commands
+       ▼
+   slacko CLI ──HTTP──▶ Slack Web API
+                           │
+                     xoxc- token + d cookie
+                     (from your browser session)
 ```
 
-Or build from source:
+## Why Not a Slack App?
+
+| | Slack App / Bot Token | slacko |
+|---|---|---|
+| Setup | Register app, get admin approval, configure OAuth | Import cookies from Chrome |
+| Permissions | Scoped, limited by admin | Full access — anything you can do in Slack |
+| Rate limits | Strict (tier 1-4) | Web client limits (generous) |
+| Internal channels | Need explicit permission | If you can see it, slacko can too |
+| Enterprise Grid | Complex multi-workspace auth | Just import cookies per workspace |
+
+## Install
+
+### From source (recommended)
 
 ```bash
 git clone https://github.com/DaleXiao/slacko.git
@@ -18,73 +45,134 @@ cd slacko
 go build ./cmd/slacko/
 ```
 
-## Quick Start / 快速开始
+### Go install
 
-### 1. Get credentials / 获取凭证
+```bash
+go install github.com/DaleXiao/slacko/cmd/slacko@latest
+```
 
-Open Chrome → navigate to your Slack workspace → F12 → Application → Cookies → find `d` cookie for `.slack.com`.
+## Quick Start
 
-For the `xoxc-` token: F12 → Network → filter `api/` → check any request's form data for `token`.
+### 1. Get your credentials
 
-在 Chrome 中打开 Slack 工作区 → F12 → Application → Cookies → 找到 `.slack.com` 的 `d` cookie。
-Token：F12 → Network → 过滤 `api/` → 查看任意请求的 form data 中的 `token`。
+**Option A: Import from Chrome** (easiest)
 
-### 2. Configure / 配置
+```bash
+slacko auth import --browser chrome
+```
+
+**Option B: Manual setup**
+
+Open Chrome → your Slack workspace → F12:
+- **d cookie**: Application → Cookies → `.slack.com` → `d`
+- **xoxc- token**: Network → filter `api/` → any request's form data → `token`
 
 ```bash
 slacko auth manual --token xoxc-YOUR-TOKEN --cookie "YOUR-D-COOKIE" --workspace your-team
 ```
 
-### 3. Use / 使用
+### 2. Verify
 
 ```bash
-slacko status                          # Check connection
+slacko auth status
+```
+
+### 3. Go
+
+```bash
 slacko channel list                    # List channels
 slacko channel read general --limit 10 # Read messages
 slacko channel send general "Hello!"   # Send message
 slacko dm send @alice "Hi there"       # Send DM
-slacko search "quarterly report"       # Search
-slacko user list                       # List users
+slacko search "quarterly report"       # Search messages
 ```
 
-## Commands / 命令
+## Commands
 
-| Command | Description / 说明 |
-|---------|-------------------|
-| `auth import --browser chrome` | Import cookies from Chrome / 从 Chrome 导入 cookie |
-| `auth manual` | Set token & cookie manually / 手动设置 |
-| `auth status` | Check auth status / 检查认证状态 |
-| `workspace list` | List workspaces / 列出工作区 |
-| `channel list` | List channels / 列出频道 |
-| `channel read CHANNEL` | Read messages / 读消息 |
-| `channel send CHANNEL MSG` | Send message / 发消息 |
-| `dm list` | List DMs / 列出私聊 |
-| `dm read USER` | Read DMs / 读私聊 |
-| `dm send USER MSG` | Send DM / 发私聊 |
-| `search QUERY` | Search messages / 搜索消息 |
-| `status` | Show status / 显示状态 |
-| `user list` | List users / 列出用户 |
-| `user info USER` | User details / 用户详情 |
+### Auth
 
-## Global Flags / 全局选项
+```bash
+slacko auth import --browser chrome     # Import cookies from Chrome
+slacko auth manual --token T --cookie C # Set credentials manually
+slacko auth status                      # Check auth status
+```
 
-| Flag | Description / 说明 |
-|------|-------------------|
-| `--json` | JSON output / JSON 输出 |
-| `--plain` | Tab-separated output / Tab 分隔输出 |
-| `--no-color` | Disable colors / 禁用颜色 |
-| `-w, --workspace` | Select workspace / 选择工作区 |
-| `--timeout` | Request timeout (default 10s) / 超时 |
-| `-q` | Quiet mode / 安静模式 |
-| `-v` | Verbose / 详细输出 |
-| `-d` | Debug / 调试模式 |
+### Channels
 
-## How it works / 原理
+```bash
+slacko channel list                     # List all channels
+slacko channel read CHANNEL [--limit N] # Read messages
+slacko channel send CHANNEL "message"   # Send a message
+```
 
-Slack's web client uses `xoxc-` tokens with a `d` cookie for authentication. slacko reuses these credentials to call Slack's internal Web API directly, bypassing the need for OAuth apps or admin permissions.
+### Direct Messages
 
-Slack 网页端用 `xoxc-` token 配合 `d` cookie 认证。slacko 复用这些凭证直接调用 Slack 内部 Web API，无需 OAuth 或管理员权限。
+```bash
+slacko dm list                          # List DM conversations
+slacko dm read USER [--limit N]         # Read DMs with a user
+slacko dm send USER "message"           # Send a DM
+```
+
+### Search & Info
+
+```bash
+slacko search "query" [--limit N]       # Search messages
+slacko user list [--limit N]            # List workspace users
+slacko user info USER                   # User details
+slacko workspace list                   # List workspaces
+slacko status                           # Connection status
+```
+
+## Output Modes
+
+```bash
+slacko channel list                     # Human-readable (colorized)
+slacko channel list --plain             # Tab-separated (for scripts)
+slacko channel list --json              # Structured JSON (for agents)
+```
+
+Respects `NO_COLOR` and `TERM=dumb`.
+
+## Global Flags
+
+| Flag | Description |
+|------|-------------|
+| `--json` | JSON output |
+| `--plain` | Tab-separated output |
+| `--no-color` | Disable colors |
+| `-w, --workspace` | Select workspace |
+| `--timeout` | Request timeout (default 10s) |
+| `-q` / `-v` / `-d` | Quiet / Verbose / Debug |
+| `--version` | Show version |
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | General error |
+| 2 | Invalid usage |
+| 3 | Auth failure |
+| 4 | Network error |
+
+## How It Works
+
+Slack's web client authenticates with an `xoxc-` token paired with a `d` cookie. slacko reuses these credentials to call the same Web API endpoints that `app.slack.com` uses — no OAuth, no bot tokens, no admin approval.
+
+Credentials are stored locally in `~/.config/slacko/`.
+
+## Security
+
+- Credentials stay on your machine (`~/.config/slacko/`)
+- No data sent to third parties
+- You're using your own Slack session
+- Use responsibly and in accordance with your organization's policies
+
+## Inspired By
+
+[spogo](https://github.com/steipete/spogo) — Spotify power CLI using web cookies. Same philosophy: if the web client can do it, so can the terminal.
 
 ## License
 
 MIT
+]]>
