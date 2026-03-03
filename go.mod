@@ -1,4 +1,4 @@
-module github.com/openclaw/slacko
+module github.com/DaleXiao/slacko
 
 go 1.22.0
 

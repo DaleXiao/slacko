@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/openclaw/slacko/internal/auth"
+	"github.com/DaleXiao/slacko/internal/auth"
 )
 
 type Client struct {

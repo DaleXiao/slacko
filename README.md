@@ -7,13 +7,13 @@ Slack CLI tool using browser cookies — no Slack App installation required.
 ## Install / 安装
 
 ```bash
-go install github.com/openclaw/slacko/cmd/slacko@latest
+go install github.com/DaleXiao/slacko/cmd/slacko@latest
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/openclaw/slacko.git
+git clone https://github.com/DaleXiao/slacko.git
 cd slacko
 go build ./cmd/slacko/
 ```
