@@ -21,7 +21,7 @@ jobs:
       - name: Build binaries
         run: |
           mkdir -p dist
-          TARGETS="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64"
+          TARGETS="darwin/arm64 windows/amd64 windows/arm64"
           for target in $TARGETS; do
             os="${target%/*}"
             arch="${target#*/}"
