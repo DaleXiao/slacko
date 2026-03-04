@@ -68,11 +68,13 @@ slackogo auth import --browser brave
 slackogo auth import --browser edge --browser-profile "Profile 1"
 ```
 
-Supported browsers: Chrome, Edge, Brave, Firefox, Safari. Cookie extraction is built-in via [sweetcookie](https://github.com/steipete/sweetcookie) — no external tools needed.
+Supported browsers: Chrome, Edge, Brave, Firefox, Safari. Cookie extraction and xoxc- token discovery are fully automatic — no DevTools needed.
 
 **Option B: Manual setup**
 
-Open Chrome → your Slack workspace → F12:
+If automatic import doesn't work (e.g. locked cookie DB), you can set credentials manually:
+
+Open your browser → Slack workspace → F12:
 - **d cookie**: Application → Cookies → `.slack.com` → `d`
 - **xoxc- token**: Network → filter `api/` → any request's form data → `token`
 
@@ -169,6 +171,13 @@ Respects `NO_COLOR` and `TERM=dumb`.
 Slack's web client authenticates with an `xoxc-` token paired with a `d` cookie. slackogo reuses these credentials to call the same Web API endpoints that `app.slack.com` uses — no OAuth, no bot tokens, no admin approval.
 
 Credentials are stored locally in `~/.config/slackogo/`.
+
+## Features
+
+- **One-command setup** — `slackogo auth import --browser edge` extracts cookies and tokens automatically
+- **Browser fingerprint** — API requests mimic real Edge browser headers to avoid detection
+- **Cookie rotation** — automatically captures and persists Slack's rotated `d` cookie
+- **Enterprise Grid compatible** — designed to work with Enterprise Grid workspaces
 
 ## Project Structure
 
