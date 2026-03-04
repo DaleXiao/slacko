@@ -72,19 +72,12 @@ func ImportFromBrowser(browser, browserProfile, workspace string) ([]ImportResul
 	var lastErr string
 
 	if workspace != "" {
-		// Try multiple URL patterns for enterprise grid compatibility
-		urls := []string{
-			fmt.Sprintf("https://%s.slack.com/", workspace),
-			fmt.Sprintf("https://%s.enterprise.slack.com/", workspace),
+		result := tryExtractToken(cookie, fmt.Sprintf("https://%s.slack.com/", workspace), workspace)
+		if result != nil && result.Token != "" {
+			return []ImportResult{*result}, nil
 		}
-		for _, u := range urls {
-			result := tryExtractToken(cookie, u, workspace)
-			if result != nil && result.Token != "" {
-				return []ImportResult{*result}, nil
-			}
-			if result != nil && result.Error != "" {
-				lastErr = result.Error
-			}
+		if result != nil && result.Error != "" {
+			lastErr = result.Error
 		}
 		// Token extraction failed — save cookie-only
 		msg := fmt.Sprintf("cookie saved for %s. Add token manually: slackogo auth manual --token <TOKEN> --cookie '<COOKIE>' %s", workspace, workspace)
