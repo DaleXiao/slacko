@@ -51,6 +51,15 @@ func (c *Client) Post(method string, params url.Values) (json.RawMessage, error)
 	}
 	defer resp.Body.Close()
 
+	// Capture rotated d cookie from response
+	for _, cookie := range resp.Cookies() {
+		if cookie.Name == "d" && cookie.Value != "" && cookie.Value != c.Creds.Cookie {
+			c.Creds.Cookie = cookie.Value
+			// Best-effort persist — don't fail the request if save fails
+			_ = auth.AddOrUpdateCredentials(*c.Creds)
+		}
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("read error: %w", err)
