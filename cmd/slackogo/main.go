@@ -224,15 +224,43 @@ func main() {
 
 func runAuthImport(ctx *app.Context, cmd *AuthImportCmd) error {
 	p := ctx.Printer
-	p.Human("Importing cookies from %s...", cmd.Browser)
-	cookie, err := auth.ImportFromBrowser(cmd.Browser, cmd.BrowserProfile)
+	p.Human("Importing credentials from %s...", cmd.Browser)
+	results, err := auth.ImportFromBrowser(cmd.Browser, cmd.BrowserProfile)
 	if err != nil {
 		return err
 	}
-	p.Success("Cookie imported successfully")
-	p.Human("Cookie value (first 20 chars): %s...", cookie[:min(20, len(cookie))])
-	p.Human("\nYou still need to provide the xoxc- token.")
-	p.Human("Use: slacko auth manual --token <TOKEN> --cookie '%s' --workspace <NAME>", cookie)
+
+	for _, r := range results {
+		if r.Error != "" {
+			p.Error("  %s", r.Error)
+			continue
+		}
+		if r.Token == "" {
+			p.Human("  Cookie found but could not extract token automatically.")
+			p.Human("  Use: slackogo auth manual --token <TOKEN> --cookie '<COOKIE>' <WORKSPACE>")
+			continue
+		}
+
+		cred := auth.Credentials{
+			Token:     r.Token,
+			Cookie:    r.Cookie,
+			Workspace: r.Workspace,
+		}
+		if err := auth.AddOrUpdateCredentials(cred); err != nil {
+			p.Error("  Failed to save credentials for %s: %v", r.Workspace, err)
+			continue
+		}
+
+		name := r.Workspace
+		if r.TeamName != "" {
+			name = fmt.Sprintf("%s (%s)", r.TeamName, r.Workspace)
+		}
+		p.Success("✓ Imported: %s", name)
+	}
+
+	if len(results) > 0 && results[0].Token != "" {
+		p.Human("\nVerify with: slackogo auth status")
+	}
 	return nil
 }
 
