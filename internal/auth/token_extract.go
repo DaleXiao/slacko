@@ -22,24 +22,24 @@ func ExtractTokenFromBrowser(browser string) (token string, err error) {
 	}
 }
 
-// JS to extract all xoxc- tokens. Uses ONLY single quotes — no double quotes.
-// Priority: script tag boot_data first (workspace-level), then globals, then localStorage.
+// JS to extract all xoxc- tokens. Uses regex match across all localStorage values.
+// Returns pipe-separated tokens (newlines get eaten by AppleScript).
+// Priority: script tag boot_data first, then globals, then localStorage regex scan.
 const extractJS = `(function(){
 var r=[];
 var s=document.querySelectorAll('script');
 for(var i=0;i<s.length;i++){
-var m=s[i].textContent.match(/'api_token'\s*:\s*'(xoxc-[^']+)'/);
-if(!m) m=s[i].textContent.match(/"api_token"\s*:\s*"(xoxc-[^"]+)"/);
-if(m) r.push(m[1]);
+var m=s[i].textContent.match(/xoxc-[a-zA-Z0-9_-]+/g);
+if(m) r.push.apply(r,m);
 }
 if(typeof boot_data!=='undefined'&&boot_data.api_token) r.push(boot_data.api_token);
 if(typeof TS!=='undefined'&&TS.boot_data&&TS.boot_data.api_token) r.push(TS.boot_data.api_token);
 for(var j=0;j<localStorage.length;j++){
 var v=localStorage.getItem(localStorage.key(j));
-if(v&&v.indexOf('xoxc-')===0) r.push(v);
-try{var o=JSON.parse(v);if(o&&o.token&&o.token.indexOf('xoxc-')===0) r.push(o.token);}catch(e){}
+var lm=v?v.match(/xoxc-[a-zA-Z0-9_-]+/g):null;
+if(lm) r.push.apply(r,lm);
 }
-return[...new Set(r)].join('\n');
+return[...new Set(r)].join('|');
 })()`
 
 func extractTokenMacOS(browser string) (string, error) {

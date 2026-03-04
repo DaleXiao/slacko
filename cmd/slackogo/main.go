@@ -252,7 +252,7 @@ func runAuthImport(ctx *app.Context, cmd *AuthImportCmd) error {
 		} else {
 			// May have multiple tokens (Enterprise Grid: E-prefix vs T-prefix team_id)
 			// Test each token to find the workspace-level one (team_id starts with T)
-			candidates := strings.Split(rawTokens, "\n")
+			candidates := strings.Split(rawTokens, "|")
 			if ctx.Verbose {
 				p.Human("  Found %d token candidate(s)", len(candidates))
 			}
