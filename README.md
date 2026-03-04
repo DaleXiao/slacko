@@ -1,13 +1,12 @@
 <div align="center">
 
-# 🔧 slacko
+# 🔧 slackogo
 
 **Slack, but make it terminal.**
 
 Power CLI using web cookies. Read channels, send messages, search, and script with JSON/plain output.
 
-[![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white)](https://go.dev)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Go](https://img.shields.io/badge/Go-1.23+-00ADD8?logo=go&logoColor=white)](https://go.dev)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 </div>
@@ -20,46 +19,41 @@ Your already logged-in Slack workspace — the agent can use it directly. No adm
 AI Agent (Claude, GPT, etc.)
        │ CLI commands
        ▼
-   slacko CLI ──HTTP──▶ Slack Web API
-                           │
-                     xoxc- token + d cookie
-                     (from your browser session)
+   slackogo CLI ──HTTP──▶ Slack Web API
+                              │
+                        xoxc- token + d cookie
+                        (from your browser session)
 ```
 
 ## Why Not a Slack App?
 
-| | Slack App / Bot Token | slacko |
+| | Slack App / Bot Token | slackogo |
 |---|---|---|
 | Setup | Register app, get admin approval, configure OAuth | Import cookies from Chrome |
 | Permissions | Scoped, limited by admin | Full access — anything you can do in Slack |
 | Rate limits | Strict (tier 1-4) | Web client limits (generous) |
-| Internal channels | Need explicit permission | If you can see it, slacko can too |
+| Internal channels | Need explicit permission | If you can see it, slackogo can too |
 | Enterprise Grid | Complex multi-workspace auth | Just import cookies per workspace |
 
 ## Install
 
-### Go
+### From source
 
 ```bash
-# From source
-git clone https://github.com/DaleXiao/slacko.git
-cd slacko
-go build ./cmd/slacko/
-
-# Or via go install
-go install github.com/DaleXiao/slacko/cmd/slacko@latest
+git clone https://github.com/DaleXiao/slackogo.git
+cd slackogo
+go build ./cmd/slackogo/
 ```
 
-### Node.js
+### Go install
 
 ```bash
-git clone https://github.com/DaleXiao/slacko.git
-cd slacko/node
-npm install
-npm link    # makes 'slacko' available globally
+go install github.com/DaleXiao/slackogo/cmd/slackogo@latest
 ```
 
-Both implementations share the same credential store (`~/.config/slacko/`) and have identical command interfaces.
+### Download binary
+
+Grab a pre-built binary from [Releases](https://github.com/DaleXiao/slackogo/releases) (macOS arm64, Windows amd64/arm64).
 
 ## Quick Start
 
@@ -68,13 +62,13 @@ Both implementations share the same credential store (`~/.config/slacko/`) and h
 **Option A: Import from browser** (easiest)
 
 ```bash
-slacko auth import --browser chrome
-slacko auth import --browser edge
-slacko auth import --browser brave
-slacko auth import --browser edge --browser-profile "Profile 1"
+slackogo auth import --browser chrome
+slackogo auth import --browser edge
+slackogo auth import --browser brave
+slackogo auth import --browser edge --browser-profile "Profile 1"
 ```
 
-Supported browsers: Chrome, Edge, Brave, Firefox, Safari (requires [sweetcookie](https://github.com/steipete/sweetcookie)).
+Supported browsers: Chrome, Edge, Brave, Firefox, Safari. Cookie extraction is built-in via [sweetcookie](https://github.com/steipete/sweetcookie) — no external tools needed.
 
 **Option B: Manual setup**
 
@@ -83,23 +77,23 @@ Open Chrome → your Slack workspace → F12:
 - **xoxc- token**: Network → filter `api/` → any request's form data → `token`
 
 ```bash
-slacko auth manual --token xoxc-YOUR-TOKEN --cookie "YOUR-D-COOKIE" --workspace your-team
+slackogo auth manual --token xoxc-YOUR-TOKEN --cookie "YOUR-D-COOKIE" your-team
 ```
 
 ### 2. Verify
 
 ```bash
-slacko auth status
+slackogo auth status
 ```
 
 ### 3. Go
 
 ```bash
-slacko channel list                    # List channels
-slacko channel read general --limit 10 # Read messages
-slacko channel send general "Hello!"   # Send message
-slacko dm send @alice "Hi there"       # Send DM
-slacko search "quarterly report"       # Search messages
+slackogo channel list                    # List channels
+slackogo channel read general --limit 10 # Read messages
+slackogo channel send general "Hello!"   # Send message
+slackogo dm send @alice "Hi there"       # Send DM
+slackogo search "quarterly report"       # Search messages
 ```
 
 ## Commands
@@ -107,43 +101,43 @@ slacko search "quarterly report"       # Search messages
 ### Auth
 
 ```bash
-slacko auth import --browser chrome     # Import cookies from Chrome
-slacko auth manual --token T --cookie C # Set credentials manually
-slacko auth status                      # Check auth status
+slackogo auth import --browser chrome     # Import cookies from Chrome
+slackogo auth manual --token T --cookie C # Set credentials manually
+slackogo auth status                      # Check auth status
 ```
 
 ### Channels
 
 ```bash
-slacko channel list                     # List all channels
-slacko channel read CHANNEL [--limit N] # Read messages
-slacko channel send CHANNEL "message"   # Send a message
+slackogo channel list                     # List all channels
+slackogo channel read CHANNEL [--limit N] # Read messages
+slackogo channel send CHANNEL "message"   # Send a message
 ```
 
 ### Direct Messages
 
 ```bash
-slacko dm list                          # List DM conversations
-slacko dm read USER [--limit N]         # Read DMs with a user
-slacko dm send USER "message"           # Send a DM
+slackogo dm list                          # List DM conversations
+slackogo dm read USER [--limit N]         # Read DMs with a user
+slackogo dm send USER "message"           # Send a DM
 ```
 
 ### Search & Info
 
 ```bash
-slacko search "query" [--limit N]       # Search messages
-slacko user list [--limit N]            # List workspace users
-slacko user info USER                   # User details
-slacko workspace list                   # List workspaces
-slacko status                           # Connection status
+slackogo search "query" [--limit N]       # Search messages
+slackogo user list [--limit N]            # List workspace users
+slackogo user info USER                   # User details
+slackogo workspace list                   # List workspaces
+slackogo status                           # Connection status
 ```
 
 ## Output Modes
 
 ```bash
-slacko channel list                     # Human-readable (colorized)
-slacko channel list --plain             # Tab-separated (for scripts)
-slacko channel list --json              # Structured JSON (for agents)
+slackogo channel list                     # Human-readable (colorized)
+slackogo channel list --plain             # Tab-separated (for scripts)
+slackogo channel list --json              # Structured JSON (for agents)
 ```
 
 Respects `NO_COLOR` and `TERM=dumb`.
@@ -172,19 +166,17 @@ Respects `NO_COLOR` and `TERM=dumb`.
 
 ## How It Works
 
-Slack's web client authenticates with an `xoxc-` token paired with a `d` cookie. slacko reuses these credentials to call the same Web API endpoints that `app.slack.com` uses — no OAuth, no bot tokens, no admin approval.
+Slack's web client authenticates with an `xoxc-` token paired with a `d` cookie. slackogo reuses these credentials to call the same Web API endpoints that `app.slack.com` uses — no OAuth, no bot tokens, no admin approval.
 
-Credentials are stored locally in `~/.config/slacko/`.
+Credentials are stored locally in `~/.config/slackogo/`.
 
 ## Project Structure
 
 ```
-slacko/
-├── cmd/slacko/          # Go CLI entry point
+slackogo/
+├── cmd/slackogo/        # CLI entry point
 ├── internal/            # Go packages (api, auth, output, app)
-├── node/                # Node.js implementation
-│   ├── bin/slacko.js    # CLI entry point (commander)
-│   └── lib/             # client, auth, output modules
+├── .github/workflows/   # Release automation
 ├── .gitignore
 ├── LICENSE
 └── README.md
@@ -192,7 +184,7 @@ slacko/
 
 ## Security
 
-- Credentials stay on your machine (`~/.config/slacko/`)
+- Credentials stay on your machine (`~/.config/slackogo/`)
 - No data sent to third parties
 - You're using your own Slack session
 - Use responsibly and in accordance with your organization's policies

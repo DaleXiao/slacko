@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/DaleXiao/slacko/internal/api"
-	"github.com/DaleXiao/slacko/internal/auth"
-	"github.com/DaleXiao/slacko/internal/output"
+	"github.com/DaleXiao/slackogo/internal/api"
+	"github.com/DaleXiao/slackogo/internal/auth"
+	"github.com/DaleXiao/slackogo/internal/output"
 )
 
 type Context struct {

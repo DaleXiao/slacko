@@ -1,4 +1,4 @@
-module github.com/DaleXiao/slacko
+module github.com/DaleXiao/slackogo
 
 go 1.23.0
 

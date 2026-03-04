@@ -25,10 +25,10 @@ jobs:
           for target in $TARGETS; do
             os="${target%/*}"
             arch="${target#*/}"
-            output="slacko-${os}-${arch}"
+            output="slackogo-${os}-${arch}"
             [ "$os" = "windows" ] && output="${output}.exe"
             echo "Building ${output}..."
-            GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" -o "dist/${output}" ./cmd/slacko/
+            GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" -o "dist/${output}" ./cmd/slackogo/
           done
 
       - name: Create Release

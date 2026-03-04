@@ -18,7 +18,7 @@ func ConfigDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dir := filepath.Join(home, ".config", "slacko")
+	dir := filepath.Join(home, ".config", "slackogo")
 	return dir, os.MkdirAll(dir, 0700)
 }
 
@@ -67,7 +67,7 @@ func FindCredentials(workspace string) (*Credentials, error) {
 		return nil, err
 	}
 	if len(creds) == 0 {
-		return nil, fmt.Errorf("no credentials configured. Run 'slacko auth manual' or 'slacko auth import'")
+		return nil, fmt.Errorf("no credentials configured. Run 'slackogo auth manual' or 'slackogo auth import'")
 	}
 	if workspace == "" {
 		return &creds[0], nil
