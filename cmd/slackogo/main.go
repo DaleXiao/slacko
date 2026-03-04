@@ -60,7 +60,7 @@ type AuthCmd struct {
 type AuthImportCmd struct {
 	Browser        string `help:"Browser to import from (chrome,edge,brave,firefox,safari)" default:"chrome" enum:"chrome,edge,brave,firefox,safari"`
 	BrowserProfile string `help:"Browser profile name" optional:""`
-	Workspace      string `help:"Workspace domain (e.g. myteam) for Enterprise Grid" optional:"" short:"W"`
+	Target         string `help:"Target workspace domain (e.g. myteam) for Enterprise Grid" optional:"" name:"target" short:"t"`
 }
 
 type AuthManualCmd struct {
@@ -226,7 +226,7 @@ func main() {
 func runAuthImport(ctx *app.Context, cmd *AuthImportCmd) error {
 	p := ctx.Printer
 	p.Human("Importing credentials from %s...", cmd.Browser)
-	results, err := auth.ImportFromBrowser(cmd.Browser, cmd.BrowserProfile, cmd.Workspace)
+	results, err := auth.ImportFromBrowser(cmd.Browser, cmd.BrowserProfile, cmd.Target)
 	if err != nil {
 		return err
 	}
